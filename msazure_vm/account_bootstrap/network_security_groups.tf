@@ -118,4 +118,10 @@ resource "azurerm_network_security_group" "vnet_sg" {
     source_address_prefix      = "*"
   }
 
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }

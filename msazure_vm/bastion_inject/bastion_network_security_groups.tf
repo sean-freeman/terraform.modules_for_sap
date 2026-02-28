@@ -23,6 +23,12 @@ resource "azurerm_network_security_group" "bastion_connection_sg" {
     source_address_prefix      = azurerm_subnet.bastion_subnet.address_prefixes[0]
   }
 
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 
@@ -69,6 +75,12 @@ resource "azurerm_network_security_group" "bastion_vm_sg" {
   #    source_port_range          = 22
   #    source_address_prefix      = "0.0.0.0/0"
   #  }
+
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
 
 }
 

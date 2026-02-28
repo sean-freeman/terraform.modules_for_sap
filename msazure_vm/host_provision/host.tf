@@ -16,6 +16,13 @@ resource "azurerm_network_interface" "host_nic0" {
     #private_ip_address            = 
     #public_ip_address_id          = 
   }
+
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 
@@ -83,7 +90,8 @@ resource "azurerm_linux_virtual_machine" "host" {
 
   lifecycle {
     ignore_changes = [
-      source_image_reference
+      source_image_reference,
+      tags
     ]
   }
 

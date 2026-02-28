@@ -21,6 +21,12 @@ resource "azurerm_network_security_group" "bastion_nsg" {
     source_address_prefix      = "*"
   }
 
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 

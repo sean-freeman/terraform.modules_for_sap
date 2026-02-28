@@ -27,6 +27,12 @@ resource "azurerm_managed_disk" "block_volume" {
 
   disk_iops_read_write = each.value.disk_iops
 
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
   # Increase operation timeout for Compute and Storage, default to 30m in all Terraform Modules for SAP
   timeouts {
     create = "30m"

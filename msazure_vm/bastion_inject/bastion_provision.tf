@@ -6,6 +6,11 @@ resource "azurerm_public_ip" "bastion_host_publicip" {
   location            = var.module_var_az_location_region
   allocation_method   = "Static"
   #public_ip_address_allocation = "Dynamic"
+    lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
 }
 
 
@@ -23,6 +28,13 @@ resource "azurerm_network_interface" "bastion_host_nic0" {
     #private_ip_address            = 
     public_ip_address_id = azurerm_public_ip.bastion_host_publicip.id
   }
+
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 resource "azurerm_network_interface_security_group_association" "bastion_host_nic0_sg" {
@@ -43,6 +55,13 @@ resource "azurerm_network_interface" "bastion_host_nic1" {
     private_ip_address_allocation = "Dynamic"
     #private_ip_address            = 
   }
+
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 
@@ -103,7 +122,8 @@ resource "azurerm_linux_virtual_machine" "bastion_host" {
 
   lifecycle {
     ignore_changes = [
-      source_image_reference
+      source_image_reference,
+      tags
     ]
   }
 
