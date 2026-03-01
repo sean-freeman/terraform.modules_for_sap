@@ -18,6 +18,12 @@ resource "azurerm_private_endpoint" "endpoint" {
     private_dns_zone_ids = ["${data.azurerm_private_dns_zone.vnet_private_dns.id}"]
   }
 
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 
