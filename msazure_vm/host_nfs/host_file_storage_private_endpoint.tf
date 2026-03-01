@@ -4,7 +4,7 @@ resource "azurerm_private_endpoint" "endpoint" {
   name                = "${var.module_var_resource_prefix}stgacc${random_string.random_suffix.result}-private-endpoint"
   resource_group_name = var.module_var_az_resource_group_name
   location            = var.module_var_az_location_region
-  subnet_id           = local.target_vnet_subnet_id
+  subnet_id           = var.module_var_az_vnet_subnet_id
 
   private_service_connection {
     name                           = "${var.module_var_resource_prefix}stgacc${random_string.random_suffix.result}-private-service-connection"

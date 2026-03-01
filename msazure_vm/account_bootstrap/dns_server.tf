@@ -20,7 +20,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dns_services_linked_ne
   name                  = "${var.module_var_resource_prefix}-dns-link"
   resource_group_name   = var.module_var_az_resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.dns_services_zone.name
-  virtual_network_id    = local.target_vnet_id
+  virtual_network_id    = var.module_var_az_vnet_id
   registration_enabled  = false
   lifecycle {
     ignore_changes = [

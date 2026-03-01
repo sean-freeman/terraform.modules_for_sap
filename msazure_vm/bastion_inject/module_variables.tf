@@ -8,7 +8,7 @@ variable "module_var_resource_prefix" {}
 
 variable "module_var_az_vnet_name" {}
 
-variable "module_var_az_vnet_subnet_name" {}
+variable "module_var_az_vnet_subnet_range" {}
 
 variable "module_var_bastion_ssh_key_id" {}
 

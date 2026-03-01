@@ -16,7 +16,7 @@ resource "azurerm_managed_disk" "block_volume" {
   }
 
   name                 = "${var.module_var_host_name}-vol-${each.value.name}"
-  resource_group_name  = local.target_resource_group_name
+  resource_group_name  = var.module_var_az_resource_group_name
   location             = var.module_var_az_location_region
 
   // Premium SSD size (P), Standard SSD size (E), Standard HDD size (S)

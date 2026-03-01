@@ -23,7 +23,8 @@ resource "azurerm_network_security_group" "bastion_nsg" {
 
   lifecycle {
     ignore_changes = [
-      tags
+      tags,
+      security_rule # avoid force replacement when additional rules are appended by azurerm_network_security_rule resources
     ]
   }
 
