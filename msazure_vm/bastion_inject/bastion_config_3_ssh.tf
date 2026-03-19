@@ -1,9 +1,9 @@
+# Note: If login uses root, you do not need "sudo" prefix or "sudo su - root -c 'command here'"
+#       For AWS, MS Azure and GCP without initial root login the sudo elevated privilege is required
 
-resource "null_resource" "bastion_setup" {
+resource "null_resource" "bastion_config_3" {
 
-  depends_on = [
-    azurerm_linux_virtual_machine.bastion_host
-  ]
+  depends_on = [null_resource.bastion_config_2]
 
   connection {
     type        = "ssh"
@@ -21,7 +21,7 @@ resource "null_resource" "bastion_setup" {
   # "By default, OpenSSH's scp implementation runs in the remote user's home directory and so you can specify a relative path to upload into that home directory"
   # https://www.terraform.io/language/resources/provisioners/file#destination-paths
   provisioner "file" {
-    destination = "bastion_config_1.sh"
+    destination = "bastion_config_3.sh"
     content     = <<EOT
     #!/bin/bash
     echo '---- Sleep 20s to ensure bastion host is ready -----' && sleep 20
@@ -153,7 +153,7 @@ resource "null_resource" "bastion_setup" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/azvm-user/bastion_config_1.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_1.sh'"
+      "chmod +x /home/azvm-user/bastion_config_3.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_3.sh'"
     ]
   }
 
