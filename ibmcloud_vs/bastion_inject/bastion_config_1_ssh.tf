@@ -8,13 +8,16 @@
 
 resource "null_resource" "bastion_config_1" {
 
-  depends_on = [azurerm_linux_virtual_machine.bastion_host]
+  depends_on = [
+    ibm_is_instance.bastion_host,
+    ibm_is_floating_ip.bastion_floating_ip
+  ]
 
   connection {
     type        = "ssh"
-    user        = "azvm-user"
+    user        = "root"
     private_key = var.module_var_bastion_private_ssh_key
-    host        = azurerm_public_ip.bastion_host_publicip.ip_address
+    host        = ibm_is_floating_ip.bastion_floating_ip.address
 
     # Required when using RHEL 8.x because /tmp is set with noexec
     # Path must already exist and must not use Bash shell special variable, e.g. cannot use $HOME/terraform/tmp/
@@ -43,7 +46,7 @@ resource "null_resource" "bastion_config_1" {
     useradd --create-home ${var.module_var_bastion_user}
     mkdir -p /home/${var.module_var_bastion_user}/.ssh
 
-    /bin/cp -f /home/azvm-user/.ssh/authorized_keys /home/${var.module_var_bastion_user}/.ssh/authorized_keys
+    /bin/cp -f /root/.ssh/authorized_keys /home/${var.module_var_bastion_user}/.ssh/authorized_keys
     if [ "$os_release" = 'rhel' ]; then chown -R ${var.module_var_bastion_user}:${var.module_var_bastion_user} /home/${var.module_var_bastion_user}/.ssh ; fi
     if [ "$os_release" = 'sles' ] || [ "$os_release" = 'sles_sap' ]; then chown -R ${var.module_var_bastion_user}:users /home/${var.module_var_bastion_user}/.ssh ; fi
     chmod 750 /home/${var.module_var_bastion_user}/.ssh
@@ -62,7 +65,7 @@ resource "null_resource" "bastion_config_1" {
     sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
     sed -i 's/#PermitRootLogin/PermitRootLogin/' /etc/ssh/sshd_config
     echo 'Allow SSH Login to root user only from the Bastion private Subnet range (i.e. no root login using Public IP)'
-    echo 'Match Address ${var.module_var_az_vnet_subnet_range}' >> /etc/ssh/sshd_config
+    echo 'Match Address ${data.ibm_is_subnet.vpc_subnet.ipv4_cidr_block}' >> /etc/ssh/sshd_config
     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
 
     echo 'Reload sshd service after sshd_config changes'
@@ -167,7 +170,7 @@ resource "null_resource" "bastion_config_1" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/azvm-user/bastion_config_1.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_1.sh'"
+      "chmod +x ./bastion_config_1.sh ; bash ./bastion_config_1.sh"
     ]
   }
 
