@@ -5,6 +5,8 @@ resource "null_resource" "bastion_config_2" {
 
   depends_on = [null_resource.bastion_config_1]
 
+  count = var.module_var_bastion_grd_rdp_enable ? 1 : 0
+
   # Specify the ssh connection
   connection {
     type        = "ssh"
@@ -66,6 +68,7 @@ EOF
 
 resource "null_resource" "bastion_config_2_sleep" {
   depends_on = [null_resource.bastion_config_2]
+  count      = var.module_var_bastion_grd_rdp_enable ? 1 : 0
   provisioner "local-exec" {
     command = "echo '----Sleep 30s to ensure VM is ready-----' && sleep 30"
   }

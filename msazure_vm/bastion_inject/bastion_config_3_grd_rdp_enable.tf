@@ -8,6 +8,8 @@ resource "null_resource" "bastion_config_3" {
 
   depends_on = [null_resource.bastion_config_2_sleep]
 
+  count = var.module_var_bastion_grd_rdp_enable ? 1 : 0
+
   # Specify the ssh connection
   connection {
     type        = "ssh"
