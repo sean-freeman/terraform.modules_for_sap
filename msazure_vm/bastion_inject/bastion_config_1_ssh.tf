@@ -157,10 +157,6 @@ resource "null_resource" "bastion_config_1" {
   # this is to avoid 'Your password has expired' after 60+ days
   chage -m 0 -M 99999 -I -1 -E -1 ${var.module_var_bastion_user}
 
-  echo 'Disable azvm-user'
-  sudo mv /home/azvm-user/.ssh/authorized_keys /home/azvm-user/.ssh/disabled_keys
-  echo 'Disabled the azvm-user'
-
   EOT
   }
 

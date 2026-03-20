@@ -28,7 +28,7 @@ resource "null_resource" "bastion_config_4" {
     echo 'Disable azvm-user'
     sudo mv /home/azvm-user/.ssh/authorized_keys /home/azvm-user/.ssh/disabled_keys
     echo 'Disabled the azvm-user'
-  EOT
+    EOT
   }
 
   provisioner "remote-exec" {
