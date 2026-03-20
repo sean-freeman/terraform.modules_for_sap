@@ -1,9 +1,9 @@
 # Note: If login uses root, you do not need "sudo" prefix or "sudo su - root -c 'command here'"
 #       For AWS, MS Azure and GCP without initial root login the sudo elevated privilege is required
 
-resource "null_resource" "bastion_config_3" {
+resource "null_resource" "bastion_config_1" {
 
-  depends_on = [null_resource.bastion_config_2]
+  depends_on = [azurerm_linux_virtual_machine.bastion_host]
 
   connection {
     type        = "ssh"
@@ -21,10 +21,10 @@ resource "null_resource" "bastion_config_3" {
   # "By default, OpenSSH's scp implementation runs in the remote user's home directory and so you can specify a relative path to upload into that home directory"
   # https://www.terraform.io/language/resources/provisioners/file#destination-paths
   provisioner "file" {
-    destination = "bastion_config_3.sh"
+    destination = "bastion_config_1.sh"
     content     = <<EOT
     #!/bin/bash
-    echo '---- Sleep 20s to ensure bastion host is ready -----' && sleep 20
+    echo '---- Sleep 30s to ensure bastion host is ready -----' && sleep 30
 
     os_release=$(grep ^ID= /etc/os-release | cut -d '=' -f2 | tr -d '\"')
     os_version=$(grep ^VERSION_ID= /etc/os-release)
@@ -83,9 +83,22 @@ resource "null_resource" "bastion_config_3" {
       echo 'Activate firewalld'
       systemctl start firewalld
       systemctl enable firewalld
+
       echo 'Allow new SSH Port'
-      firewall-cmd --add-port ${var.module_var_bastion_ssh_port}/tcp
-      firewall-cmd --add-port ${var.module_var_bastion_ssh_port}/tcp --permanent
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port port="${var.module_var_bastion_ssh_port}" protocol="tcp" log prefix="[ALLOW_SSH_CUSTOM]" accept'
+      # firewall-cmd --permanent --add-port ${var.module_var_bastion_ssh_port}/tcp
+
+      # Cannot append rules with prerouting in firewalld so use rich rules
+      # Use drop for silent, instead of reject
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port port=22 protocol=tcp log prefix="[DROP_SSH_22]" drop'
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port port=22 protocol=udp log prefix="[DROP_SSH_22]" drop'
+
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" family="ipv4" icmp-type name="echo-request" log prefix="[DROP_ICMP_PING]" drop'
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" family="ipv4" icmp-type name="echo-reply" log prefix="[DROP_ICMP_PING]" drop'
+
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" family="ipv6" icmp-type name="echo-request" log prefix="[DROP_ICMPV6_PING]" drop'
+      firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" family="ipv6" icmp-type name="echo-reply" log prefix="[DROP_ICMPV6_PING]" drop'
+
       firewall-cmd --reload
     fi
 
@@ -153,7 +166,7 @@ resource "null_resource" "bastion_config_3" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/azvm-user/bastion_config_3.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_3.sh'"
+      "chmod +x /home/azvm-user/bastion_config_1.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_1.sh'"
     ]
   }
 

@@ -4,22 +4,9 @@
 # RDP = 1 remote view session with 1 user login (new remote login will logout others)
 # VNC = many remote view sessions with 1 user login
 
-variable "grd_rdp_user" { default = "rdpuser" }
-variable "grd_rdp_user_password" { default = "rdppass!" }
-variable "grd_rdp_port" { default = 55010 }
+resource "null_resource" "bastion_config_3" {
 
-
-resource "null_resource" "bastion_config_1_sleep" {
-  depends_on = [null_resource.bastion_config_1]
-  provisioner "local-exec" {
-    command = "echo '----Sleep 60s to ensure VM is ready-----' && sleep 60"
-  }
-}
-
-
-resource "null_resource" "bastion_config_2" {
-
-  depends_on = [null_resource.bastion_config_1_sleep]
+  depends_on = [null_resource.bastion_config_2_sleep]
 
   # Specify the ssh connection
   connection {
@@ -27,13 +14,14 @@ resource "null_resource" "bastion_config_2" {
     user        = "azvm-user"
     private_key = var.module_var_bastion_private_ssh_key
     host        = azurerm_public_ip.bastion_host_publicip.ip_address
+    port        = var.module_var_bastion_ssh_port
   }
 
   # Path must already exist and must not use Bash shell special variable, e.g. cannot use $HOME/file.sh
   # "By default, OpenSSH's scp implementation runs in the remote user's home directory and so you can specify a relative path to upload into that home directory"
   # https://www.terraform.io/language/resources/provisioners/file#destination-paths
   provisioner "file" {
-    destination = "bastion_config_2.sh"
+    destination = "bastion_config_3.sh"
     content     = <<EOT
 #!/bin/bash
 
@@ -46,9 +34,14 @@ os_version=$(grep ^VERSION_ID= /etc/os-release)
 
 
 # Variables
-tf_input_grd_rdp_user="${var.grd_rdp_user}"
-tf_input_grd_rdp_user_password="${var.grd_rdp_user_password}"
-tf_input_grd_rdp_port="${var.grd_rdp_port}"
+tf_input_grd_rdp_user="${var.module_var_bastion_grd_rdp_user}"
+tf_input_grd_rdp_user_password="${var.module_var_bastion_grd_rdp_user_password}"
+tf_input_grd_rdp_port="${var.module_var_bastion_grd_rdp_port}"
+
+if [ -z "$tf_input_grd_rdp_user_password" ]; then
+    echo "ERROR: GNOME Remote Desktop (GRD) RDP User Password is blank, exiting..."
+    exit 1
+fi
 
 echo 'Configure firewalld to allow GRD RDP port'
 if [ "$os_release" = 'rhel' ]; then
@@ -59,7 +52,7 @@ fi
 echo 'Activate firewalld'
 systemctl start firewalld
 systemctl enable firewalld
-firewall-cmd --zone=public '--add-rich-rule=rule family="ipv4" port port="'$tf_input_grd_rdp_port'" protocol="tcp" log prefix="[ALLOW_GRD_RDP]" accept'
+firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port port="'$tf_input_grd_rdp_port'" protocol="tcp" log prefix="[ALLOW_GRD_RDP]" accept'
 # firewall-cmd --permanent --add-service=rdp
 # firewall-cmd --permanent --add-port=$tf_input_grd_rdp_port/tcp
 firewall-cmd --reload
@@ -132,13 +125,14 @@ grdctl --system status
 # netstat -tunlp | grep gnome-remote
 # lsof -P -i TCP -i UDP
 # loginctl list-sessions
+# firewall-cmd --list-all-zones
 
   EOT
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ./bastion_config_2.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_2.sh'"
+      "chmod +x ./bastion_config_3.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_3.sh'"
     ]
   }
 

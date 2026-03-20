@@ -64,6 +64,19 @@ resource "azurerm_network_security_group" "bastion_vm_sg" {
     source_address_prefix      = "0.0.0.0/0"
   }
 
+  # Security Group Rule for Bastion/Jump Host - Allow Inbound GRD RDP port chosen by user
+  security_rule {
+    name                       = "inbound_grd_rdp_custom"
+    priority                   = 102
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    destination_port_range     = var.module_var_bastion_grd_rdp_port
+    destination_address_prefix = "0.0.0.0/0"
+    source_port_range          = "*"
+    source_address_prefix      = "0.0.0.0/0"
+  }
+
   # Security Group Rule for Bastion/Jump Host - Allow Outbound SSH Port 22 connection (e.g. to other hosts)
   #  security_rule {
   #    name                       = "outbound_ssh_22"
