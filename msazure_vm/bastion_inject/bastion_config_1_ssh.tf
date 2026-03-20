@@ -24,7 +24,7 @@ resource "null_resource" "bastion_config_1" {
     destination = "bastion_config_1.sh"
     content     = <<EOT
     #!/bin/bash
-    echo '---- Sleep 30s to ensure bastion host is ready -----' && sleep 30
+    echo '---- Sleep 60s to ensure bastion host is ready after initial boot and cloud-init -----' && sleep 60",
 
     os_release=$(grep ^ID= /etc/os-release | cut -d '=' -f2 | tr -d '\"')
     os_version=$(grep ^VERSION_ID= /etc/os-release)

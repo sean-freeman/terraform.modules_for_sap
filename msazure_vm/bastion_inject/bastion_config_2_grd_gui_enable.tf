@@ -58,7 +58,7 @@ EOF
 
   provisioner "remote-exec" {
     inline = [
-      "echo '---- Sleep 30s to ensure bastion host is ready after initial boot and cloud-init -----' && sleep 30",
+      "echo '---- Sleep 30s to ensure bastion host is ready -----' && sleep 30",
       "chmod +x ./bastion_config_2.sh ; sudo su - root -c 'bash /home/azvm-user/bastion_config_2.sh'"
     ]
   }
